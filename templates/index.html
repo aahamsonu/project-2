@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="row align-items-center min-vh-75 py-5">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold mb-4">
+                CUTM Student <span class="text-primary">Complaint Portal</span>
+            </h1>
+            <p class="lead mb-4">
+                A transparent, real-time complaint tracking system for CUTM students. 
+                Submit your complaints and track them like Flipkart orders!
+            </p>
+            
+            {% if not current_user.is_authenticated %}
+            <div class="d-flex gap-3">
+                <a href="{{ url_for('auth_login') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </a>
+                <a href="{{ url_for('auth_register') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-user-plus me-2"></i>Register
+                </a>
+            </div>
+            {% else %}
+            <div class="d-flex gap-3">
+                {% if current_user.role == 'student' %}
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                </a>
+                {% elif current_user.role == 'admin' %}
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                </a>
+                {% elif current_user.role == 'staff' %}
+                <a href="{{ url_for('staff_dashboard') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-tachometer-alt me-2"></i>Staff Dashboard
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-6">
+            <!-- Modern Illustration with Icons -->
+            <div class="text-center p-4">
+                <div class="position-relative d-inline-block">
+                    <!-- Main Circle with Gradient -->
+                    <div class="rounded-circle mb-4 mx-auto" 
+                         style="width: 320px; height: 320px; background: linear-gradient(135deg, #0066ff 0%, #0099ff 100%); 
+                                box-shadow: 0 20px 40px rgba(0,102,255,0.3);">
+                        <div class="d-flex align-items-center justify-content-center h-100">
+                            <i class="fas fa-clipboard-list fa-7x text-white"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Floating Icons -->
+                    <div class="position-absolute top-0 start-0" style="transform: translate(-30%, -30%);">
+                        <div class="bg-white rounded-circle p-3 shadow-lg" style="animation: float 3s ease-in-out infinite;">
+                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="position-absolute top-0 end-0" style="transform: translate(30%, -30%);">
+                        <div class="bg-white rounded-circle p-3 shadow-lg" style="animation: float 3s ease-in-out infinite 0.5s;">
+                            <i class="fas fa-clock fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="position-absolute bottom-0 start-0" style="transform: translate(-30%, 30%);">
+                        <div class="bg-white rounded-circle p-3 shadow-lg" style="animation: float 3s ease-in-out infinite 1s;">
+                            <i class="fas fa-user-check fa-2x text-info"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="position-absolute bottom-0 end-0" style="transform: translate(30%, 30%);">
+                        <div class="bg-white rounded-circle p-3 shadow-lg" style="animation: float 3s ease-in-out infinite 1.5s;">
+                            <i class="fas fa-bell fa-2x text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="d-flex justify-content-center gap-3 mt-5">
+                    <div class="bg-white rounded-pill px-4 py-3 shadow-sm hover-scale">
+                        <i class="fas fa-ticket-alt text-primary me-2"></i>
+                        <span class="fw-bold text-dark">500+</span>
+                        <small class="text-muted ms-1">Complaints</small>
+                    </div>
+                    <div class="bg-white rounded-pill px-4 py-3 shadow-sm hover-scale">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span class="fw-bold text-dark">95%</span>
+                        <small class="text-muted ms-1">Resolution</small>
+                    </div>
+                    <div class="bg-white rounded-pill px-4 py-3 shadow-sm hover-scale">
+                        <i class="fas fa-users text-info me-2"></i>
+                        <span class="fw-bold text-dark">1000+</span>
+                        <small class="text-muted ms-1">Students</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row g-4 py-5">
+        <h2 class="text-center mb-4 fw-bold">Key Features</h2>
+        
+        <div class="col-md-4">
+            <div class="card h-100 text-center border-0 shadow-sm hover-scale">
+                <div class="card-body p-4">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-block mb-3">
+                        <i class="fas fa-id-card text-primary fa-3x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Unique Complaint ID</h4>
+                    <p class="text-muted">Every complaint gets a unique ID (CMP-2026-XXXXX) for easy tracking</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 text-center border-0 shadow-sm hover-scale">
+                <div class="card-body p-4">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-block mb-3">
+                        <i class="fas fa-clock text-primary fa-3x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Real-time Tracking</h4>
+                    <p class="text-muted">Track your complaint status like Flipkart order tracking</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 text-center border-0 shadow-sm hover-scale">
+                <div class="card-body p-4">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-block mb-3">
+                        <i class="fas fa-calendar-check text-primary fa-3x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Estimated Timeline</h4>
+                    <p class="text-muted">Know when your complaint will be resolved</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Categories Section -->
+    <div class="row g-4 py-5 bg-light rounded-4 p-5">
+        <h2 class="text-center mb-4 fw-bold">Complaint Categories</h2>
+        
+        <div class="col-md-3 col-6">
+            <div class="text-center p-3">
+                <div class="rounded-circle bg-warning bg-opacity-10 p-3 d-inline-block mb-2">
+                    <i class="fas fa-bed text-warning fa-2x"></i>
+                </div>
+                <h6 class="fw-bold mt-2">Hostel</h6>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="text-center p-3">
+                <div class="rounded-circle bg-success bg-opacity-10 p-3 d-inline-block mb-2">
+                    <i class="fas fa-book text-success fa-2x"></i>
+                </div>
+                <h6 class="fw-bold mt-2">Library</h6>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="text-center p-3">
+                <div class="rounded-circle bg-info bg-opacity-10 p-3 d-inline-block mb-2">
+                    <i class="fas fa-chalkboard text-info fa-2x"></i>
+                </div>
+                <h6 class="fw-bold mt-2">Classroom</h6>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="text-center p-3">
+                <div class="rounded-circle bg-warning bg-opacity-10 p-3 d-inline-block mb-2">
+                    <i class="fas fa-utensils text-warning fa-2x"></i>
+                </div>
+                <h6 class="fw-bold mt-2">Mess</h6>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="text-center p-3">
+                <div class="rounded-circle bg-danger bg-opacity-10 p-3 d-inline-block mb-2">
+                    <i class="fas fa-file-alt text-danger fa-2x"></i>
+                </div>
+                <h6 class="fw-bold mt-2">Examination</h6>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="text-center p-3">
+                <div class="rounded-circle bg-success bg-opacity-10 p-3 d-inline-block mb-2">
+                    <i class="fas fa-rupee-sign text-success fa-2x"></i>
+                </div>
+                <h6 class="fw-bold mt-2">Fees</h6>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="text-center p-3">
+                <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-block mb-2">
+                    <i class="fas fa-bus text-primary fa-2x"></i>
+                </div>
+                <h6 class="fw-bold mt-2">Transport</h6>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="text-center p-3">
+                <div class="rounded-circle bg-secondary bg-opacity-10 p-3 d-inline-block mb-2">
+                    <i class="fas fa-wifi text-secondary fa-2x"></i>
+                </div>
+                <h6 class="fw-bold mt-2">IT Services</h6>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.hover-scale {
+    transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+.bg-opacity-10 {
+    --bs-bg-opacity: 0.1;
+}
+
+.min-vh-75 {
+    min-height: 75vh;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">
+        <i class="fas fa-chart-bar me-2"></i>
+        Analytics Dashboard
+    </h2>
+    
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card position-relative">
+                <i class="fas fa-ticket-alt stats-icon"></i>
+                <div class="stats-number">{{ total_complaints }}</div>
+                <div class="stats-label">Total Complaints</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card position-relative" style="background: linear-gradient(135deg, #ffc107 0%, #ffab00 100%);">
+                <i class="fas fa-clock stats-icon"></i>
+                <div class="stats-number">{{ pending_complaints }}</div>
+                <div class="stats-label">Pending</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card position-relative" style="background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);">
+                <i class="fas fa-spinner stats-icon"></i>
+                <div class="stats-number">{{ in_progress }}</div>
+                <div class="stats-label">In Progress</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card position-relative" style="background: linear-gradient(135deg, #198754 0%, #157347 100%);">
+                <i class="fas fa-check-circle stats-icon"></i>
+                <div class="stats-number">{{ resolved }}</div>
+                <div class="stats-label">Resolved</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Monthly Complaint Trend</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="complaintTrend" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Status Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Department Performance -->
+    <div class="card">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Department Performance</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Department</th>
+                            <th>Total Complaints</th>
+                            <th>Resolved</th>
+                            <th>Pending</th>
+                            <th>Resolution Rate</th>
+                            <th>Avg. Resolution Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dept in dept_performance %}
+                        <tr>
+                            <td>{{ dept.name }}</td>
+                            <td>{{ dept.total }}</td>
+                            <td class="text-success">{{ dept.resolved }}</td>
+                            <td class="text-warning">{{ dept.pending }}</td>
+                            <td>
+                                {% if dept.total > 0 %}
+                                    {{ (dept.resolved / dept.total * 100) | round(1) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </td>
+                            <td>{{ dept.avg_time }} days</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No department data available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Monthly Trend Chart
+    const trendCtx = document.getElementById('complaintTrend').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: {{ months | tojson }},
+            datasets: [{
+                label: 'Total Complaints',
+                data: {{ complaint_counts | tojson }},
+                borderColor: 'rgb(13, 110, 253)',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Resolved Complaints',
+                data: {{ resolved_counts | tojson }},
+                borderColor: 'rgb(25, 135, 84)',
+                backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // Status Distribution Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Resolved', 'Pending', 'In Progress', 'Rejected/Escalated'],
+            datasets: [{
+                data: [
+                    {{ resolved }},
+                    {{ pending_complaints }},
+                    {{ in_progress }},
+                    {{ total_complaints - resolved - pending_complaints - in_progress }}
+                ],
+                backgroundColor: [
+                    '#198754',
+                    '#ffc107',
+                    '#0d6efd',
+                    '#dc3545'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

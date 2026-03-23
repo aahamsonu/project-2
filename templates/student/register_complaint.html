@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Register Complaint{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus-circle text-primary me-2"></i>
+                        Register New Complaint
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" id="complaintForm" class="needs-validation" novalidate>
+                        <!-- Student Information (Auto-filled) -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control" value="{{ current_user.name }}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Registration No</label>
+                                <input type="text" class="form-control" value="{{ current_user.registration_no }}" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Program</label>
+                                <input type="text" class="form-control" value="{{ current_user.program }}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Branch</label>
+                                <input type="text" class="form-control" value="{{ current_user.branch }}" readonly>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- Complaint Details -->
+                        <h5 class="mb-3">Complaint Details</h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">Category *</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="">Select Category</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.name }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Please select a category.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="subcategory" class="form-label">Sub Category *</label>
+                                <select class="form-select" id="subcategory" name="subcategory" required>
+                                    <option value="">First select a category</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a subcategory.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description *</label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="4" maxlength="500" required
+                                      placeholder="Please describe your problem in detail..."></textarea>
+                            <div class="invalid-feedback">Please provide a description.</div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label for="location" class="form-label">Location / Room No *</label>
+                                <input type="text" class="form-control" id="location" name="location" 
+                                       placeholder="e.g., Hostel Block A - Room 204" required>
+                                <div class="invalid-feedback">Please specify the location.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="date" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="date" name="date" 
+                                       value="{{ now().strftime('%Y-%m-%d') }}" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="image-upload" class="form-label">Upload Image (Optional)</label>
+                            <input type="file" class="form-control" id="image-upload" name="image" 
+                                   accept="image/*">
+                            <div class="form-text">Max file size: 16MB. Allowed: JPG, PNG, GIF</div>
+                            <div id="image-preview"></div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- Important Information -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> After submission, you will receive a unique Complaint ID. 
+                            You can use this ID to track your complaint status in real-time.
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Complaint
+                            </button>
+                            <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Fetch subcategories when category changes
+    $('#category').change(function() {
+        const category = $(this).val();
+        const subcategorySelect = $('#subcategory');
+        
+        if (category) {
+            // Show loading
+            subcategorySelect.html('<option value="">Loading...</option>');
+            subcategorySelect.prop('disabled', true);
+            
+            $.getJSON(`/api/subcategories/${category}`, function(data) {
+                subcategorySelect.empty();
+                subcategorySelect.append('<option value="">Select Subcategory</option>');
+                
+                if (data.subcategories && data.subcategories.length > 0) {
+                    data.subcategories.forEach(function(subcat) {
+                        subcategorySelect.append(`<option value="${subcat}">${subcat}</option>`);
+                    });
+                    subcategorySelect.prop('disabled', false);
+                } else {
+                    subcategorySelect.append('<option value="">No subcategories available</option>');
+                }
+            }).fail(function() {
+                subcategorySelect.html('<option value="">Error loading subcategories</option>');
+            });
+        } else {
+            subcategorySelect.html('<option value="">First select a category</option>');
+            subcategorySelect.prop('disabled', true);
+        }
+    });
+    
+    // Form validation
+    var form = document.getElementById('complaintForm');
+    form.addEventListener('submit', function(event) {
+        var subcategory = document.getElementById('subcategory').value;
+        
+        if (!subcategory || subcategory === '') {
+            event.preventDefault();
+            event.stopPropagation();
+            alert('Please select a subcategory');
+            return false;
+        }
+        
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        
+        form.classList.add('was-validated');
+    }, false);
+    
+    // File upload preview
+    $('#image-upload').change(function() {
+        const file = this.files[0];
+        if (file) {
+            let reader = new FileReader();
+            reader.onload = function(event) {
+                $('#image-preview').html(`
+                    <div class="mt-2 position-relative">
+                        <img src="${event.target.result}" class="img-thumbnail" style="max-height: 200px;">
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" onclick="removeImage()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `);
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+});
+
+function removeImage() {
+    $('#image-upload').val('');
+    $('#image-preview').empty();
+}
+</script>
+{% endblock %}

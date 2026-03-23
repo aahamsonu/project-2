@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUTM Complaint Portal - {% block title %}Home{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-clipboard-list me-2"></i>CUTM Complaint Portal
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                {% if current_user.is_authenticated %}
+                    <ul class="navbar-nav ms-auto">
+                        <!-- Notification Bell - For all logged in users -->
+                        <li class="nav-item dropdown" id="notification-dropdown">
+                            <a class="nav-link position-relative" href="#" id="notificationBell" role="button" 
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-bell"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge" 
+                                      style="display: none;">0</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end notification-menu" aria-labelledby="notificationBell" 
+                                 style="width: 350px; max-height: 400px; overflow-y: auto;">
+                                <div class="dropdown-header d-flex justify-content-between align-items-center bg-light">
+                                    <span class="fw-bold">Notifications</span>
+                                    <button class="btn btn-sm btn-link mark-all-read" style="display: none;">Mark all read</button>
+                                </div>
+                                <div class="notification-list">
+                                    <!-- Notifications will be loaded here via AJAX -->
+                                    <div class="text-center text-muted py-3">Loading notifications...</div>
+                                </div>
+                                <div class="dropdown-footer text-center border-top py-2">
+                                    <a href="{{ url_for('all_notifications') }}" class="text-decoration-none small text-primary">
+                                        <i class="fas fa-bell me-1"></i>View All Notifications
+                                    </a>
+                                </div>
+                            </div>
+                        </li>
+                        
+                        <!-- Student Navigation -->
+                        {% if current_user.role == 'student' %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'student_dashboard' %}active{% endif %}" 
+                                   href="{{ url_for('student_dashboard') }}">
+                                    <i class="fas fa-home"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'register_complaint' %}active{% endif %}" 
+                                   href="{{ url_for('register_complaint') }}">
+                                    <i class="fas fa-plus-circle"></i> Register Complaint
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'complaint_process_flow' %}active{% endif %}" 
+                                   href="{{ url_for('complaint_process_flow') }}">
+                                    <i class="fas fa-diagram-project"></i> Complaint Process
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'my_complaints' %}active{% endif %}" 
+                                   href="{{ url_for('my_complaints') }}">
+                                    <i class="fas fa-list"></i> My Complaints
+                                </a>
+                            </li>
+                        
+                        <!-- Admin Navigation -->
+                        {% elif current_user.role == 'admin' %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}" 
+                                   href="{{ url_for('admin_dashboard') }}">
+                                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'admin_complaints' %}active{% endif %}" 
+                                   href="{{ url_for('admin_complaints') }}">
+                                    <i class="fas fa-list"></i> All Complaints
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'admin_analytics' %}active{% endif %}" 
+                                   href="{{ url_for('admin_analytics') }}">
+                                    <i class="fas fa-chart-bar"></i> Analytics
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'admin_overdue_complaints' %}active{% endif %}" 
+                                   href="{{ url_for('admin_overdue_complaints') }}">
+                                    <i class="fas fa-exclamation-triangle"></i> Overdue
+                                </a>
+                            </li>
+                        
+                        <!-- Staff Navigation -->
+                        {% elif current_user.role == 'staff' %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'staff_dashboard' %}active{% endif %}" 
+                                   href="{{ url_for('staff_dashboard') }}">
+                                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        <!-- Common for all logged in users -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'student_profile' %}active{% endif %}" 
+                               href="{{ url_for('student_profile') }}">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth_logout') }}">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                
+                <!-- Non-authenticated users -->
+                {% else %}
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth_login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth_register') }}">Register</a>
+                        </li>
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center text-muted py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">© 2026 CUTM Student Complaint Portal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts - सही order में -->
+<!-- पहले jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- फिर Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- फिर Custom JS -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<!-- अब staff dashboard का extra JS अपने आप आ जाएगा -->
+    
+    <!-- Modal Initialization Fix - Modal blink problem के लिए -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Bootstrap modals ko manually initialize करो
+        var modalElements = document.querySelectorAll('.modal');
+        modalElements.forEach(function(modalEl) {
+            try {
+                new bootstrap.Modal(modalEl);
+            } catch(e) {
+                console.log('Modal already initialized');
+            }
+        });
+        
+        // Modal open होने पर background scroll बंद करो
+        var modalTriggers = document.querySelectorAll('[data-bs-toggle="modal"]');
+        modalTriggers.forEach(function(trigger) {
+            trigger.addEventListener('click', function() {
+                document.body.style.overflow = 'hidden';
+            });
+        });
+        
+        // Modal close होने पर background scroll वापस चालू करो
+        var closeButtons = document.querySelectorAll('[data-bs-dismiss="modal"]');
+        closeButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                document.body.style.overflow = 'auto';
+            });
+        });
+        
+        // Modal backdrop click पर भी scroll चालू करो
+        var modals = document.querySelectorAll('.modal');
+        modals.forEach(function(modal) {
+            modal.addEventListener('hidden.bs.modal', function() {
+                document.body.style.overflow = 'auto';
+            });
+        });
+    });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

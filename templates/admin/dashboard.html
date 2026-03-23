@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">
+        <i class="fas fa-tachometer-alt me-2"></i>
+        Admin Dashboard
+    </h2>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card position-relative">
+                <i class="fas fa-ticket-alt stats-icon"></i>
+                <div class="stats-number">{{ total_complaints }}</div>
+                <div class="stats-label">Total Complaints</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card position-relative" style="background: linear-gradient(135deg, #ffc107 0%, #ffab00 100%);">
+                <i class="fas fa-clock stats-icon"></i>
+                <div class="stats-number">{{ pending_complaints }}</div>
+                <div class="stats-label">Pending</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card position-relative" style="background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);">
+                <i class="fas fa-spinner stats-icon"></i>
+                <div class="stats-number">{{ in_progress }}</div>
+                <div class="stats-label">In Progress</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card position-relative" style="background: linear-gradient(135deg, #198754 0%, #157347 100%);">
+                <i class="fas fa-check-circle stats-icon"></i>
+                <div class="stats-number">{{ resolved }}</div>
+                <div class="stats-label">Resolved</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('admin_complaints') }}" class="btn btn-primary">
+                            <i class="fas fa-list me-2"></i>View All Complaints
+                        </a>
+                        <a href="{{ url_for('admin_analytics') }}" class="btn btn-info text-white">
+                            <i class="fas fa-chart-bar me-2"></i>Analytics
+                        </a>
+                        <a href="{{ url_for('admin_overdue_complaints') }}" class="btn btn-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Overdue Complaints
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Department Statistics -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Department-wise Complaints</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Department</th>
+                                    <th>Total</th>
+                                    <th>Resolved</th>
+                                    <th>Pending</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dept in dept_stats %}
+                                <tr>
+                                    <td>{{ dept.name }}</td>
+                                    <td>{{ dept.total }}</td>
+                                    <td class="text-success">{{ dept.resolved }}</td>
+                                    <td class="text-warning">{{ dept.pending }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Recent Complaints</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for complaint in recent_complaints %}
+                        <a href="{{ url_for('admin_view_complaint', complaint_id=complaint.id) }}" 
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ complaint.complaint_id }}</strong>
+                                    <small class="text-muted d-block">{{ complaint.category }}</small>
+                                </div>
+                                <span class="badge bg-{{ 'success' if complaint.status == 'Resolved' 
+                                                      else 'warning' if complaint.status == 'Pending'
+                                                      else 'primary' }}">
+                                    {{ complaint.status }}
+                                </span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-circle me-2"></i>
+                        My Profile
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        <div class="row mb-3">
+                            <label class="col-md-3 col-form-label">Registration No</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" value="{{ current_user.registration_no }}" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-md-3 col-form-label">Full Name</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" name="name" value="{{ current_user.name }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-md-3 col-form-label">Email</label>
+                            <div class="col-md-9">
+                                <input type="email" class="form-control" name="email" value="{{ current_user.email }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-md-3 col-form-label">Mobile</label>
+                            <div class="col-md-9">
+                                <input type="tel" class="form-control" name="mobile" value="{{ current_user.mobile }}" 
+                                       pattern="[0-9]{10}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-md-3 col-form-label">Program</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" value="{{ current_user.program }}" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-md-3 col-form-label">Branch</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" value="{{ current_user.branch }}" readonly>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h5 class="mb-3">Change Password (Optional)</h5>
+                        
+                        <div class="row mb-3">
+                            <label class="col-md-3 col-form-label">New Password</label>
+                            <div class="col-md-9">
+                                <input type="password" class="form-control" name="new_password" 
+                                       placeholder="Leave blank to keep current password">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <label class="col-md-3 col-form-label">Confirm Password</label>
+                            <div class="col-md-9">
+                                <input type="password" class="form-control" name="confirm_password">
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="fas fa-save me-2"></i>Update Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation and password match
+(function() {
+    'use strict';
+    var forms = document.querySelectorAll('.needs-validation');
+    
+    Array.prototype.slice.call(forms).forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            var newPass = document.querySelector('input[name="new_password"]');
+            var confirmPass = document.querySelector('input[name="confirm_password"]');
+            
+            if (newPass.value || confirmPass.value) {
+                if (newPass.value !== confirmPass.value) {
+                    confirmPass.setCustomValidity('Passwords do not match');
+                } else if (newPass.value.length < 6) {
+                    newPass.setCustomValidity('Password must be at least 6 characters');
+                } else {
+                    confirmPass.setCustomValidity('');
+                }
+            }
+            
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
+</script>
+{% endblock %}

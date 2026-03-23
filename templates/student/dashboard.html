@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Current Time Display - Real Time Clock -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="fas fa-tachometer-alt me-2"></i>
+            Student Dashboard
+        </h2>
+        <div class="d-flex gap-2">
+            <div class="current-time-badge bg-light rounded-pill px-3 py-2 shadow-sm">
+                <i class="fas fa-clock text-primary me-2"></i>
+                <span id="liveClock">{{ current_time.strftime('%d %B %Y, %I:%M:%S %p') }}</span>
+            </div>
+            <a href="{{ url_for('register_complaint') }}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-2"></i>Register New Complaint
+            </a>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card position-relative">
+                <i class="fas fa-ticket-alt stats-icon"></i>
+                <div class="stats-number">{{ stats.total }}</div>
+                <div class="stats-label">Total Complaints</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card position-relative" style="background: linear-gradient(135deg, #ffc107 0%, #ffab00 100%);">
+                <i class="fas fa-clock stats-icon"></i>
+                <div class="stats-number">{{ stats.pending }}</div>
+                <div class="stats-label">Pending</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card position-relative" style="background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);">
+                <i class="fas fa-spinner stats-icon"></i>
+                <div class="stats-number">{{ stats.in_progress }}</div>
+                <div class="stats-label">In Progress</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card position-relative" style="background: linear-gradient(135deg, #198754 0%, #157347 100%);">
+                <i class="fas fa-check-circle stats-icon"></i>
+                <div class="stats-number">{{ stats.resolved }}</div>
+                <div class="stats-label">Resolved</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Complaints -->
+    <div class="card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>
+                Recent Complaints
+            </h5>
+            <a href="{{ url_for('my_complaints') }}" class="btn btn-sm btn-outline-primary">
+                View All <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Complaint ID</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Filed On</th>
+                            <th>Expected By</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if complaints %}
+                            {% for complaint in complaints %}
+                            <tr>
+                                <td>
+                                    <strong>{{ complaint.complaint_id }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ complaint.category }}</span>
+                                </td>
+                                <td>{{ complaint.description[:50] }}{% if complaint.description|length > 50 %}...{% endif %}</td>
+                                <td>
+                                    {% if complaint.status == 'Resolved' %}
+                                        <span class="badge bg-success">{{ complaint.status }}</span>
+                                    {% elif complaint.status == 'Rejected' %}
+                                        <span class="badge bg-danger">{{ complaint.status }}</span>
+                                    {% elif complaint.status == 'Escalated' %}
+                                        <span class="badge bg-warning">{{ complaint.status }}</span>
+                                    {% elif complaint.status in ['Assigned', 'Under Review', 'Work in Progress'] %}
+                                        <span class="badge bg-primary">{{ complaint.status }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ complaint.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <i class="far fa-calendar-alt text-muted me-1"></i>
+                                    {{ format_ist(complaint.created_at, '%d %b %Y') }}
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="far fa-clock"></i>
+                                        {{ format_ist(complaint.created_at, '%I:%M %p') }}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if complaint.estimated_completion_date %}
+                                        <div class="{% if complaint.estimated_completion_date < now() and complaint.status != 'Resolved' %}text-danger{% endif %}">
+                                            <i class="far fa-calendar-check me-1"></i>
+                                            {{ format_ist(complaint.estimated_completion_date, '%d %b %Y') }}
+                                            {% if complaint.estimated_completion_date < now() and complaint.status != 'Resolved' %}
+                                                <br>
+                                                <span class="badge bg-danger mt-1">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>Overdue
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">
+                                            <i class="far fa-clock me-1"></i>Not set
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('complaint_tracking', complaint_id=complaint.complaint_id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> Track
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                                    <h5 class="text-muted">No complaints registered yet</h5>
+                                    <p class="text-muted mb-3">Register your first complaint to get started</p>
+                                    <a href="{{ url_for('register_complaint') }}" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-plus-circle me-2"></i>Register Your First Complaint
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.current-time-badge {
+    font-size: 0.95rem;
+    border: 1px solid #dee2e6;
+    background: white;
+}
+
+.stats-card {
+    transition: transform 0.3s;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.btn-outline-primary:hover {
+    transform: translateX(5px);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Live Real Time Clock Update (IST)
+function updateISTClock() {
+    const now = new Date();
+    const options = {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    };
+    const istTime = now.toLocaleString('en-IN', options);
+    document.getElementById('liveClock').textContent = istTime;
+}
+
+// Update clock every second
+updateISTClock();
+setInterval(updateISTClock, 1000);
+
+// Tooltip initialization
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+});
+</script>
+{% endblock %}

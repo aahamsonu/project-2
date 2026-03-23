@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">
+        <i class="fas fa-tachometer-alt me-2"></i>
+        Staff Dashboard
+    </h2>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card position-relative">
+                <i class="fas fa-ticket-alt stats-icon"></i>
+                <div class="stats-number">{{ stats.total }}</div>
+                <div class="stats-label">Assigned to me</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card position-relative" style="background: linear-gradient(135deg, #ffc107 0%, #ffab00 100%);">
+                <i class="fas fa-clock stats-icon"></i>
+                <div class="stats-number">{{ stats.pending }}</div>
+                <div class="stats-label">Pending</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card position-relative" style="background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);">
+                <i class="fas fa-spinner stats-icon"></i>
+                <div class="stats-number">{{ stats.in_progress }}</div>
+                <div class="stats-label">In Progress</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card position-relative" style="background: linear-gradient(135deg, #198754 0%, #157347 100%);">
+                <i class="fas fa-check-circle stats-icon"></i>
+                <div class="stats-number">{{ stats.resolved }}</div>
+                <div class="stats-label">Resolved</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Assigned Complaints -->
+    <div class="card">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Complaints Assigned to Me</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Complaint ID</th>
+                            <th>Student</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Expected By</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for complaint in complaints %}
+                        <tr>
+                            <td>
+                                <strong>{{ complaint.complaint_id }}</strong>
+                            </td>
+                            <td>{{ complaint.student.name }}</td>
+                            <td>{{ complaint.category }}</td>
+                            <td>{{ complaint.description[:50] }}{% if complaint.description|length > 50 %}...{% endif %}</td>
+                            <td>
+                                {% if complaint.status == 'Resolved' %}
+                                    <span class="badge bg-success">{{ complaint.status }}</span>
+                                {% elif complaint.status == 'Rejected' %}
+                                    <span class="badge bg-danger">{{ complaint.status }}</span>
+                                {% else %}
+                                    <span class="badge bg-primary">{{ complaint.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if complaint.estimated_completion_date %}
+                                    {{ complaint.estimated_completion_date.strftime('%d %b %Y') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <!-- Update Status Button - data-bs-toggle का सही use -->
+                                <button type="button" class="btn btn-sm btn-primary update-status-btn" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#updateStatusModal{{ complaint.id }}">
+                                    Update Status
+                                </button>
+                            </td>
+                        </tr>
+                        
+                        <!-- Update Status Modal - हर complaint के लिए unique ID -->
+                        <div class="modal fade" id="updateStatusModal{{ complaint.id }}" tabindex="-1" 
+                             aria-labelledby="updateStatusModalLabel{{ complaint.id }}" aria-hidden="true"
+                             data-bs-backdrop="static" data-bs-keyboard="false">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form action="{{ url_for('staff_update_status', complaint_id=complaint.id) }}" method="POST">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="updateStatusModalLabel{{ complaint.id }}">
+                                                <i class="fas fa-edit me-2"></i>Update Complaint Status
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">Complaint ID</label>
+                                                <input type="text" class="form-control bg-light" 
+                                                       value="{{ complaint.complaint_id }}" readonly>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">New Status</label>
+                                                <select name="status" class="form-select" required>
+                                                    <option value="">Select Status</option>
+                                                    <option value="Under Review">Under Review</option>
+                                                    <option value="Work in Progress">Work in Progress</option>
+                                                    <option value="Resolved">Resolved</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">Remarks</label>
+                                                <textarea name="remarks" class="form-control" rows="3" 
+                                                          placeholder="Add any remarks..."></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                <i class="fas fa-times me-1"></i>Cancel
+                                            </button>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-sync-alt me-1"></i>Update Status
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No complaints assigned to you.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Staff Dashboard Specific JavaScript
+(function() {
+    'use strict';
+    
+    // जब पेज पूरी तरह load हो जाए
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Staff Dashboard Loaded');
+        
+        // सभी modals को manually initialize करो
+        var modalElements = document.querySelectorAll('.modal');
+        modalElements.forEach(function(modalEl) {
+            try {
+                // नया Modal instance बनाओ
+                var modal = new bootstrap.Modal(modalEl, {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                
+                // Modal के events handle करो
+                modalEl.addEventListener('show.bs.modal', function() {
+                    console.log('Modal is showing');
+                    document.body.style.overflow = 'hidden';
+                });
+                
+                modalEl.addEventListener('hidden.bs.modal', function() {
+                    console.log('Modal is hidden');
+                    document.body.style.overflow = 'auto';
+                });
+                
+                // Modal element पर data attribute में store करो
+                modalEl._modal = modal;
+            } catch(e) {
+                console.log('Modal already initialized', e);
+            }
+        });
+        
+        // Update Status buttons के लिए click handler
+        var updateButtons = document.querySelectorAll('.update-status-btn');
+        updateButtons.forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                var targetId = this.getAttribute('data-bs-target');
+                var modalEl = document.querySelector(targetId);
+                
+                if (modalEl) {
+                    // अगर modal already initialized है तो use करो
+                    if (modalEl._modal) {
+                        modalEl._modal.show();
+                    } else {
+                        // नया modal बनाओ
+                        var modal = new bootstrap.Modal(modalEl, {
+                            backdrop: 'static',
+                            keyboard: false
+                        });
+                        modal.show();
+                        modalEl._modal = modal;
+                    }
+                }
+            });
+        });
+        
+        // Close buttons के लिए handler
+        var closeButtons = document.querySelectorAll('[data-bs-dismiss="modal"]');
+        closeButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                var modalEl = this.closest('.modal');
+                if (modalEl && modalEl._modal) {
+                    modalEl._modal.hide();
+                }
+            });
+        });
+    });
+    
+    // अगर कोई error आए तो
+    window.addEventListener('error', function(e) {
+        console.log('Error:', e.message);
+    });
+    
+})();
+</script>
+
+<style>
+/* Modal animations को smooth करो */
+.modal.fade .modal-dialog {
+    transition: transform 0.2s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: none;
+}
+
+/* Modal backdrop को ठीक करो */
+.modal-backdrop {
+    opacity: 0.5 !important;
+}
+
+/* Modal content को ठीक करो */
+.modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+    padding: 15px 20px;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+.modal-footer {
+    padding: 15px 20px;
+}
+</style>
+{% endblock %}
